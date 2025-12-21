@@ -1,0 +1,25 @@
+name: ML CI/CD Pipeline
+on: [push]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install torch torchvision pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Train Model
+        run: python train.py
+
+      - name: Run Model Validation Tests
+        run: pytest test_model.py
