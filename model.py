@@ -5,21 +5,21 @@ import torch.nn.functional as F
 class SimpleDNN(nn.Module):
     def __init__(self):
         super(SimpleDNN, self).__init__()
-        # Layer 1: Convolutional
-        self.conv1 = nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1)
-        # Added: Max Pooling to reduce 28x28 to 14x14
-        self.pool = nn.MaxPool2d(2, 2) 
+        # Layer 1: 1 -> 8 channels (3x3 kernel)
+        self.conv1 = nn.Conv2d(1, 8, kernel_size=3, padding=1)
+        # Layer 2: 8 -> 16 channels (3x3 kernel)
+        self.conv2 = nn.Conv2d(8, 16, kernel_size=3, padding=1)
+        # Max Pooling to reduce size from 28x28 to 7x7
+        self.pool = nn.MaxPool2d(2, 2)
         
-        # Layer 2: Fully Connected
-        # Input is now 16 channels * 14 * 14 pixels = 3136
-        self.fc1 = nn.Linear(16 * 14 * 14, 16) # Reduced hidden neurons to 16
-        
-        # Layer 3: Output layer
+        # After two pools (28 -> 14 -> 7), input is 16 * 7 * 7 = 784
+        self.fc1 = nn.Linear(784, 16) 
         self.fc2 = nn.Linear(16, 10)
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x))) # Apply pooling here
-        x = x.view(-1, 16 * 14 * 14)        # Flatten
+        x = self.pool(F.relu(self.conv1(x))) # 28x28 -> 14x14
+        x = self.pool(F.relu(self.conv2(x))) # 14x14 -> 7x7
+        x = x.view(-1, 784)                  # Flatten
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return x

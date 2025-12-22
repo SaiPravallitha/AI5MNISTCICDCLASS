@@ -9,7 +9,7 @@ def test_model_pipeline():
     # 1. Check Parameter Count (< 100,000)
     param_count = sum(p.numel() for p in model.parameters())
     print(f"Total parameters: {param_count}")
-    assert param_count < 100000, f"Model too large: {param_count} params"
+    assert param_count < 25000, f"Model too large: {param_count} params"
 
     # 2. Check Input Shape (28x28)
     dummy_input = torch.randn(1, 1, 28, 28)

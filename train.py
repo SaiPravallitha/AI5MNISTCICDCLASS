@@ -11,7 +11,7 @@ def train():
         datasets.MNIST('./data', train=True, download=True, transform=transform), batch_size=64, shuffle=True)
 
     model = SimpleDNN()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.003)
     criterion = torch.nn.CrossEntropyLoss()
 
     model.train()
