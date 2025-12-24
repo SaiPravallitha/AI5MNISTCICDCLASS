@@ -40,4 +40,4 @@ def test_accuracy():
     # Note: Accuracy might be low without loading trained weights, 
     # but this confirms the validation logic works.
     print(f"Validation Accuracy: {accuracy*100}%")
-    assert accuracy >= 0.0, "Accuracy check triggered"
+    assert accuracy >= 0.95, "Accuracy check triggered"
