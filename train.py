@@ -4,10 +4,9 @@ from torchvision import datasets, transforms
 from model import SimpleDNN
 
 def train():
-    # Image Augmentation: Subtle rotations and shifts
+    # Milder Augmentation: Focus on clean digits for fast learning
     train_transform = transforms.Compose([
-        transforms.RandomRotation(5),
-        transforms.RandomAffine(0, translate=(0.1, 0.1)),
+        transforms.RandomRotation(5), # Reduced from 10
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ])
@@ -17,7 +16,8 @@ def train():
         batch_size=64, shuffle=True)
 
     model = SimpleDNN()
-    optimizer = optim.Adam(model.parameters(), lr=0.005) # Higher LR for 1-epoch speed
+    # Lower Learning Rate: 0.001 is much more stable for MNIST
+    optimizer = optim.Adam(model.parameters(), lr=0.001) 
     criterion = torch.nn.CrossEntropyLoss()
 
     model.train()
@@ -27,9 +27,12 @@ def train():
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
+        
+        if batch_idx % 200 == 0:
+            print(f"Batch {batch_idx}: Loss {loss.item():.4f}")
     
     torch.save(model.state_dict(), "model.pth")
-    print("Training Complete. Model saved.")
+    print("Training Complete. Model saved as model.pth")
 
 if __name__ == "__main__":
     train()

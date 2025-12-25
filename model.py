@@ -1,28 +1,38 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import torch.optim as optim
+from torchvision import datasets, transforms
+from model import SimpleDNN
 
-class SimpleDNN(nn.Module):
-    def __init__(self):
-        super(SimpleDNN, self).__init__()
-        # Layer 1: Conv -> BN -> Pool (Parameters: 80)
-        self.conv1 = nn.Conv2d(1, 12, kernel_size=3, padding=1)
-        self.bn1 = nn.BatchNorm2d(12)
-        # Layer 2: Conv -> BN -> Pool (Parameters: 1,168)
-        self.conv2 = nn.Conv2d(12, 16, kernel_size=3, padding=1)
-        self.bn2 = nn.BatchNorm2d(16)
-        
-        self.pool = nn.MaxPool2d(2, 2)
-        
-        # After 2 pools, 28x28 becomes 7x7. Flattened: 16 * 7 * 7 = 784
-        # Layer 3: FC (Parameters: 12,560)
-        self.fc1 = nn.Linear(784, 16)
-        self.fc2 = nn.Linear(16, 10)
+def train():
+    # Milder Augmentation: Focus on clean digits for fast learning
+    train_transform = transforms.Compose([
+        transforms.RandomRotation(5), # Reduced from 10
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,))
+    ])
 
-    def forward(self, x):
-        x = self.pool(F.relu(self.bn1(self.conv1(x)))) # 28 -> 14
-        x = self.pool(F.relu(self.bn2(self.conv2(x)))) # 14 -> 7
-        x = x.view(-1, 784)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
+    train_loader = torch.utils.data.DataLoader(
+        datasets.MNIST('./data', train=True, download=True, transform=train_transform), 
+        batch_size=64, shuffle=True)
+
+    model = SimpleDNN()
+    # Lower Learning Rate: 0.001 is much more stable for MNIST
+    optimizer = optim.Adam(model.parameters(), lr=0.001) 
+    criterion = torch.nn.CrossEntropyLoss()
+
+    model.train()
+    for batch_idx, (data, target) in enumerate(train_loader):
+        optimizer.zero_grad()
+        output = model(data)
+        loss = criterion(output, target)
+        loss.backward()
+        optimizer.step()
+        
+        if batch_idx % 200 == 0:
+            print(f"Batch {batch_idx}: Loss {loss.item():.4f}")
+    
+    torch.save(model.state_dict(), "model.pth")
+    print("Training Complete. Model saved as model.pth")
+
+if __name__ == "__main__":
+    train()

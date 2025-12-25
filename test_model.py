@@ -49,5 +49,5 @@ def test_weight_initialization():
 
         if 'bn' in name and 'bias' in name:
             continue
-        
-        assert torch.count_nonzero(param) > 0, f"Layer {name} has all zero weights"
+
+        assert torch.count_nonzero(param) > 0, f"Layer {name} is uninitialized"
