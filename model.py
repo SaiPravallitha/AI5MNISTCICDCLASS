@@ -1,38 +1,23 @@
 import torch
-import torch.optim as optim
-from torchvision import datasets, transforms
-from model import SimpleDNN
+import torch.nn as nn
+import torch.nn.functional as F
 
-def train():
-    # Milder Augmentation: Focus on clean digits for fast learning
-    train_transform = transforms.Compose([
-        transforms.RandomRotation(5), # Reduced from 10
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
-    ])
+# Just define the class directly
+class SimpleDNN(nn.Module):
+    def __init__(self):
+        super(SimpleDNN, self).__init__()
+        self.conv1 = nn.Conv2d(1, 10, kernel_size=3, padding=1)
+        self.bn1 = nn.BatchNorm2d(10)
+        self.conv2 = nn.Conv2d(10, 20, kernel_size=3, padding=1)
+        self.bn2 = nn.BatchNorm2d(20)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.fc1 = nn.Linear(20 * 7 * 7, 20)
+        self.fc2 = nn.Linear(20, 10)
 
-    train_loader = torch.utils.data.DataLoader(
-        datasets.MNIST('./data', train=True, download=True, transform=train_transform), 
-        batch_size=64, shuffle=True)
-
-    model = SimpleDNN()
-    # Lower Learning Rate: 0.001 is much more stable for MNIST
-    optimizer = optim.Adam(model.parameters(), lr=0.001) 
-    criterion = torch.nn.CrossEntropyLoss()
-
-    model.train()
-    for batch_idx, (data, target) in enumerate(train_loader):
-        optimizer.zero_grad()
-        output = model(data)
-        loss = criterion(output, target)
-        loss.backward()
-        optimizer.step()
-        
-        if batch_idx % 200 == 0:
-            print(f"Batch {batch_idx}: Loss {loss.item():.4f}")
-    
-    torch.save(model.state_dict(), "model.pth")
-    print("Training Complete. Model saved as model.pth")
-
-if __name__ == "__main__":
-    train()
+    def forward(self, x):
+        x = self.pool(F.relu(self.bn1(self.conv1(x))))
+        x = self.pool(F.relu(self.bn2(self.conv2(x))))
+        x = x.view(-1, 20 * 7 * 7)
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
