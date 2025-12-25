@@ -6,7 +6,7 @@ from model import SimpleDNN
 def train():
     # Image Augmentation: Subtle rotations and shifts
     train_transform = transforms.Compose([
-        transforms.RandomRotation(10),
+        transforms.RandomRotation(5),
         transforms.RandomAffine(0, translate=(0.1, 0.1)),
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
@@ -17,7 +17,7 @@ def train():
         batch_size=64, shuffle=True)
 
     model = SimpleDNN()
-    optimizer = optim.Adam(model.parameters(), lr=0.01) # Higher LR for 1-epoch speed
+    optimizer = optim.Adam(model.parameters(), lr=0.005) # Higher LR for 1-epoch speed
     criterion = torch.nn.CrossEntropyLoss()
 
     model.train()

@@ -46,4 +46,8 @@ def test_weight_initialization():
     """Test 3: Check if weights are properly initialized (not all zeros)"""
     model = SimpleDNN()
     for name, param in model.named_parameters():
+
+        if 'bn' in name and 'bias' in name:
+            continue
+        
         assert torch.count_nonzero(param) > 0, f"Layer {name} has all zero weights"
